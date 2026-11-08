@@ -1,5 +1,5 @@
 """Each test breaks the plan the way the old account was broken and checks the validator stops it.
-Run: python -m pytest tests  (or: python tests/test_rules.py)
+Run: python -m pytest  (or: python test_rules.py)
 """
 import copy
 import os
@@ -7,10 +7,10 @@ import sys
 
 import yaml
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from builder.validate import validate  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from validate import validate  # noqa: E402
 
-PLAN = yaml.safe_load(open(os.path.join(os.path.dirname(__file__), "..", "plans", "next_month.yaml")))
+PLAN = yaml.safe_load(open(os.path.join(os.path.dirname(__file__), "next_month.yaml")))
 
 
 def errs(mutate):

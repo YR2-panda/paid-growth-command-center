@@ -15,14 +15,14 @@ A small, reusable system for launching paid campaigns on Meta and Google:
 
 | Control | Why |
 |---|---|
-| Every number comes from Python (`builder/analysis.py`), not the model | Language models misquote figures. The agent gets a computed fact sheet and is told to use only that. |
+| Every number comes from Python (`analysis.py`), not the model | Language models misquote figures. The agent gets a computed fact sheet and is told to use only that. |
 | The agent answers through one structured tool (`submit_proposal`) | Every output is either an answer, or an answer plus a complete plan, so there's nothing to parse from free text |
 | The `guardrails` block is locked | Otherwise the agent could "fix" a failed check by editing the rule (for example, marking UK tracking as verified). Any guardrail edit is rejected. |
 | Proposals run through the same validator as human edits | One set of rules for people and AI |
 | Failed checks go back to the agent, which gets up to 2 more attempts | It either fixes the plan or explains why the request can't be done |
 | Changes are shown as a diff and need Approve | Nothing changes without a person. Approvals are logged into the export (`approvals.md`). |
 
-## The checks (`builder/validate.py`)
+## The checks (`validate.py`)
 
 | Rule | Data that led to it |
 |---|---|
@@ -43,9 +43,9 @@ A small, reusable system for launching paid campaigns on Meta and Google:
 ```bash
 pip install -r requirements.txt
 streamlit run app.py                                    # the app
-python build.py plans/next_month.yaml                   # same build from the command line
-python analyze.py sample_data/account_export_sample.xlsx
-python tests/test_rules.py && python tests/test_agent.py   # 14 tests, no API key needed
+python build.py next_month.yaml                   # same build from the command line
+python analyze.py account_export_sample.xlsx
+python test_rules.py && python test_agent.py   # 14 tests, no API key needed
 ```
 
 The Agent tab needs an Anthropic API key, which you paste in the sidebar. It's used for that session only and never stored. Every other tab works without a key.
@@ -53,7 +53,7 @@ The Agent tab needs an Anthropic API key, which you paste in the sidebar. It's u
 ## Reuse it for the next launch
 
 1. Upload the latest account export in the sidebar and read the Diagnose tab before changing anything.
-2. Load last month's plan, or `plans/_template.yaml`, and change the start date. The number of days updates to match the month.
+2. Load last month's plan, or `_template.yaml`, and change the start date. The number of days updates to match the month.
 3. Edit budgets in the Plan tab, or ask the agent ("Plan January, same budget, add an agency concept to testing").
 4. Export, upload creative, import (Meta: Ads Manager → Import ads in bulk; Google: Ads Editor → Account → Import → From file), work through the `launch_summary.md` checklist, then switch campaigns on.
 

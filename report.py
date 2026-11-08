@@ -1,7 +1,7 @@
 """Plain-English launch summary a founder can read before anything goes live."""
 import os
 
-from builder.generate import GOOGLE_BILLING_DAYS
+from generate import GOOGLE_BILLING_DAYS
 
 
 def write_summary(plan, errors, warnings, summary, outdir):

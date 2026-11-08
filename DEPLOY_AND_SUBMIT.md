@@ -8,7 +8,7 @@ Allow about 45 minutes. Do the steps in order.
 unzip campaign-builder.zip && cd campaign-builder
 python3 -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
-python tests/test_rules.py && python tests/test_agent.py  # expect 14 "pass" lines
+python test_rules.py && python test_agent.py  # expect 14 "pass" lines
 streamlit run app.py                                     # opens http://localhost:8501
 ```
 
@@ -83,4 +83,4 @@ Free apps go to sleep after a few days without visits. Open the link the morning
 
 - [ ] Open the app link so it's awake. Have the API key ready to paste.
 - [ ] Have the local version running as a backup (`streamlit run app.py`).
-- [ ] Be ready for "what happens if the AI is wrong?". Answer: the checks, the guardrail lock, the diff and Approve, and the agent tests (`tests/test_agent.py`) that use a fake model to prove the guardrails hold.
+- [ ] Be ready for "what happens if the AI is wrong?". Answer: the checks, the guardrail lock, the diff and Approve, and the agent tests (`test_agent.py`) that use a fake model to prove the guardrails hold.

@@ -2,8 +2,8 @@
 """Plan -> validated, ready-to-import Meta and Google campaigns.
 
 Usage:
-    python build.py plans/next_month.yaml            # validate + generate into output/<plan name>/
-    python build.py plans/next_month.yaml --check    # validate only
+    python build.py next_month.yaml            # validate + generate into output/<plan name>/
+    python build.py next_month.yaml --check    # validate only
 """
 import argparse
 import os
@@ -11,9 +11,9 @@ import sys
 
 import yaml
 
-from builder.generate import build_google, build_meta
-from builder.report import write_summary
-from builder.validate import validate
+from generate import build_google, build_meta
+from report import write_summary
+from validate import validate
 
 
 def main():

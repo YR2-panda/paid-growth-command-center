@@ -1,5 +1,5 @@
 """Agent loop tests with a fake Claude client: no API key or network needed.
-Run: python tests/test_agent.py
+Run: python test_agent.py
 """
 import copy
 import os
@@ -8,10 +8,10 @@ from types import SimpleNamespace as NS
 
 import yaml
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from builder import agent  # noqa: E402
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import agent  # noqa: E402
 
-PLAN_TEXT = open(os.path.join(os.path.dirname(__file__), "..", "plans", "next_month.yaml")).read()
+PLAN_TEXT = open(os.path.join(os.path.dirname(__file__), "next_month.yaml")).read()
 PLAN = yaml.safe_load(PLAN_TEXT)
 
 

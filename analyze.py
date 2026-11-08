@@ -7,7 +7,7 @@ import sys
 
 import pandas as pd
 
-from builder import analysis as a
+import analysis as a
 
 
 def main(path):

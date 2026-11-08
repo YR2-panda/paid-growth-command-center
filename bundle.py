@@ -4,9 +4,9 @@ import os
 import tempfile
 import zipfile
 
-from builder.generate import build_google, build_meta
-from builder.report import write_summary
-from builder.validate import validate
+from generate import build_google, build_meta
+from report import write_summary
+from validate import validate
 
 
 def build_zip(plan, extra_files=None):

@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 # Next-month paid plan (Task 1). This file is the single source of truth:
 # build.py validates it and turns it into Meta + Google bulk-upload files.
-# To reuse for the next launch: copy plans/_template.yaml, edit, run build.py.
+# To reuse for the next launch: copy _template.yaml, edit, run build.py.
 # ---------------------------------------------------------------------------
 launch:
   name: "Next month rebuild"

@@ -6,20 +6,24 @@ import calendar
 import copy
 import datetime as dt
 import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # every module sits next to app.py
 
 import altair as alt
 import pandas as pd
 import streamlit as st
 import yaml
 
-from builder import agent, analysis
-from builder.bundle import build_zip
-from builder.generate import GOOGLE_BILLING_DAYS
-from builder.validate import validate
+import agent
+import analysis
+from bundle import build_zip
+from generate import GOOGLE_BILLING_DAYS
+from validate import validate
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
-DEFAULT_PLAN = os.path.join(ROOT, "plans", "next_month.yaml")
-SAMPLE_DATA = os.path.join(ROOT, "sample_data", "account_export_sample.xlsx")
+DEFAULT_PLAN = os.path.join(ROOT, "next_month.yaml")
+SAMPLE_DATA = os.path.join(ROOT, "account_export_sample.xlsx")
 PRESETS = {
     "Add a UK test": "Add a $5,000 UK non-brand search test next month. Fund it from US non-brand.",
     "CEO: double Meta": "The CEO wants to double Meta spend starting tomorrow. What should we do? Commit to an answer.",
@@ -54,7 +58,7 @@ with st.sidebar:
     st.divider()
     upload = st.file_uploader("Account export (.xlsx)", type=["xlsx"],
                               help="Tabs: Meta_Daily, Meta_Ads_Weekly, Google_Daily, Trials_PostHog, Change_Log. Leave empty to use the sample.")
-    plan_upload = st.file_uploader("Plan (.yaml)", type=["yaml", "yml"], help="Leave empty to use plans/next_month.yaml.")
+    plan_upload = st.file_uploader("Plan (.yaml)", type=["yaml", "yml"], help="Leave empty to use next_month.yaml.")
     if plan_upload is not None and st.button("Load uploaded plan"):
         st.session_state.plan = yaml.safe_load(plan_upload.getvalue().decode("utf-8"))
         st.session_state.agent_result = None

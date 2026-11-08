@@ -13,7 +13,7 @@ import difflib
 
 import yaml
 
-from builder.validate import validate
+from validate import validate
 
 DEFAULT_MODEL = "claude-sonnet-5-5"
 MAX_ATTEMPTS = 3

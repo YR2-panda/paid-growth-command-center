@@ -1,6 +1,6 @@
-# Copy this file for a new launch:  cp plans/_template.yaml plans/<launch_name>.yaml
-# Edit the values, then:            python build.py plans/<launch_name>.yaml --check
-# When it passes:                   python build.py plans/<launch_name>.yaml
+# Copy this file for a new launch:  cp _template.yaml <launch_name>.yaml
+# Edit the values, then:            python build.py <launch_name>.yaml --check
+# When it passes:                   python build.py <launch_name>.yaml
 launch: {name: "New launch", start_date: "2027-01-04", days: 30, currency: USD}
 
 guardrails:
