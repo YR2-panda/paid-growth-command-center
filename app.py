@@ -233,7 +233,7 @@ with tab_agent:
         with st.spinner("Claude is drafting and checking a proposal..."):
             try:
                 st.session_state.agent_result = agent.run(anthropic.Anthropic(api_key=api_key), brief, plan_text(),
-                                                          analysis.facts(data), model=model)
+                                                          analysis.facts(data, plan["guardrails"]["cpa_target"]), model=model)
                 st.session_state.agent_brief = brief
             except Exception as e:
                 st.session_state.agent_result = None

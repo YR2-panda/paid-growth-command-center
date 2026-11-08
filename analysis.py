@@ -99,11 +99,48 @@ def campaign_table(d):
     return pd.DataFrame(rows)
 
 
-def facts(d):
+def vs_target(cpa, target):
+    if not target:
+        return ""
+    lo, hi = target["min"], target["max"]
+    where = "BELOW (better than)" if cpa < lo else "ABOVE (worse than)" if cpa > hi else "INSIDE"
+    return f" -> {where} the ${lo}-${hi} target range"
+
+
+def key_findings(d, target=None):
+    """The conclusions, computed in Python so the model doesn't have to derive or judge them."""
+    w = weekly(d)
+    out = []
+    br = tracking_breaks(w, d["Change_Log"])
+    drops = br[(br.channel == "meta") & (br.ratio < br.baseline)] if len(br) else br
+    if len(drops):
+        split = pd.Timestamp(drops.week.min())
+        pre, post = w[w.index < split], w[w.index >= split]
+        for name, part in (("before", pre), ("from", post)):
+            sp, rep, ph = part.meta_spend.sum(), part.meta_reported.sum(), part.posthog_facebook.sum()
+            out.append(f"Meta {name} week {split.date()}: spend ${sp:,.0f}, Meta-reported {rep:.0f} trials (CPA ${sp / rep:,.0f}), "
+                       f"PostHog {ph:.0f} trials (CPA ${sp / ph:,.0f}{vs_target(sp / ph, target)}).")
+        out.append(f"So from week {split.date()} Meta reports {post.meta_reported.sum() / post.posthog_facebook.sum():.0%} of the trials PostHog records. "
+                   "Meta's own CPA is inflated by broken tracking, so its algorithm optimizes on partial data. Nearby change: "
+                   + drops.sort_values("week").iloc[0].nearby_changes)
+    tot = w.sum(numeric_only=True)
+    for ch, sp, ph in (("Meta", tot.meta_spend, tot.posthog_facebook), ("Google", tot.google_spend, tot.posthog_google)):
+        out.append(f"{ch} full-period PostHog CPA ${sp / ph:,.0f}{vs_target(sp / ph, target)}.")
+    blend = (tot.meta_spend + tot.google_spend) / (tot.posthog_facebook + tot.posthog_google)
+    out.append(f"Blended full-period PostHog CPA ${blend:,.0f}{vs_target(blend, target)}.")
+    for _, r in zero_conversion(d).iterrows():
+        out.append(f"{r.channel} {r.campaign} spent ${r.spend:,.0f} with 0 conversions.")
+    md = d["Meta_Daily"]
+    daily = md.groupby(col(md, "date"))[col(md, "spend")].sum()
+    out.append(f"Meta daily spend never varied much (${daily.min():,.0f}-${daily.max():,.0f}/day), so there is NO data on how CPA responds to higher spend.")
+    return out
+
+
+def facts(d, target=None):
     """Compact, computed fact sheet handed to the agent as its only source of numbers."""
     w = weekly(d)
     tot = w.sum(numeric_only=True)
-    lines = [
+    lines = ["KEY FINDINGS (computed; use these labels, don't re-judge them):"] + [f"  - {x}" for x in key_findings(d, target)] + [
         f"Period: {w.index.min().date()} to {(w.index.max() + pd.Timedelta(days=6)).date()} ({len(w)} weeks).",
         f"Meta: spend ${tot.meta_spend:,.0f}, Meta-reported trials {tot.meta_reported:.0f}, PostHog facebook trials {tot.posthog_facebook:.0f}, "
         f"PostHog CPA ${tot.meta_spend / tot.posthog_facebook:,.0f}.",

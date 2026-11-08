@@ -87,6 +87,21 @@ def test_bad_yaml_is_caught():
     assert "not valid YAML" in r["attempts"][0]["errors"][0] and r["final"] is not None
 
 
+def test_list_fields_given_as_text_are_normalized():
+    c = FakeClient([{"answer": "No.", "changes": "[]", "risks": "- Monthly cap\n- CPA may inflate"}])
+    r = agent.run(c, "x", PLAN_TEXT, "facts")
+    assert r["final"]["proposal"]["risks"] == ["Monthly cap", "CPA may inflate"]
+    assert r["final"]["proposal"]["changes"] == []
+
+
+def test_fact_sheet_labels_target():
+    import analysis
+    f = analysis.facts(analysis.load(os.path.join(os.path.dirname(__file__), "account_export_sample.xlsx")), {"min": 250, "max": 280})
+    assert "Meta full-period PostHog CPA $266 -> INSIDE the $250-$280 target range" in f
+    assert "Blended full-period PostHog CPA $284 -> ABOVE" in f
+    assert "NO data on how CPA responds" in f
+
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

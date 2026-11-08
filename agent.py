@@ -10,6 +10,7 @@ Flow for one request:
   5. The result is shown as a diff. Nothing is applied until a person clicks Approve.
 """
 import difflib
+import json
 
 import yaml
 
@@ -26,6 +27,8 @@ Rules:
 - The `guardrails` block in the plan is set by the human. Never change it. If a request can't be met inside the guardrails, leave the plan unchanged and explain which guardrail blocks it and what would have to be true to unblock it.
 - If the plan should change, return the COMPLETE updated plan as YAML in `plan_yaml`, keeping the exact same schema and every field. Change only what the request needs. If no change is needed, omit `plan_yaml`.
 - Keep total budget, channel split and projected blended CPA inside the guardrails. If you add budget to something, say where it comes from.
+- Lead with the business evidence: tracking reliability, CPA vs target, creative and audience saturation, learning-phase disruption. Budget guardrails are a constraint to mention briefly, never the main argument.
+- For "in/above/below target" use the labels in KEY FINDINGS exactly. Don't re-judge them.
 - Be decisive. Lead `answer` with the decision in one sentence, then the evidence (with numbers), then the risk. Plain English a founder can follow. Under 200 words.
 """
 
@@ -43,6 +46,30 @@ TOOL = {
         "required": ["answer", "changes", "risks"],
     },
 }
+
+
+def _as_list(v):
+    """Models sometimes return an array field as a JSON string or bulleted text. Normalize to a list of strings."""
+    if v is None:
+        return []
+    if isinstance(v, list):
+        return [str(x).strip() for x in v if str(x).strip()]
+    if isinstance(v, str):
+        try:
+            parsed = json.loads(v)
+            if isinstance(parsed, list):
+                return _as_list(parsed)
+        except ValueError:
+            pass
+        return [ln.strip().lstrip("-*•○◦ ").strip() for ln in v.splitlines() if ln.strip().lstrip("-*•○◦ ").strip()]
+    return [str(v)]
+
+
+def normalize(proposal):
+    p = dict(proposal)
+    p["answer"] = str(p.get("answer", "")).strip()
+    p["changes"], p["risks"] = _as_list(p.get("changes")), _as_list(p.get("risks"))
+    return p
 
 
 def check(proposal, original_plan, allow_guardrail_edits=False):
@@ -84,7 +111,7 @@ def run(client, brief, plan_text, facts, model=DEFAULT_MODEL, allow_guardrail_ed
         resp = client.messages.create(model=model, max_tokens=8000, system=SYSTEM, tools=[TOOL],
                                       tool_choice={"type": "tool", "name": "submit_proposal"}, messages=messages)
         block = next(b for b in resp.content if getattr(b, "type", None) == "tool_use")
-        proposal = dict(block.input)
+        proposal = normalize(block.input)
         plan, errors, warnings, summary = check(proposal, original, allow_guardrail_edits)
         attempt = {"proposal": proposal, "plan": plan, "errors": errors, "warnings": warnings, "summary": summary}
         attempts.append(attempt)
