@@ -1,0 +1,59 @@
+# Copy this file for a new launch:  cp plans/_template.yaml plans/<launch_name>.yaml
+# Edit the values, then:            python build.py plans/<launch_name>.yaml --check
+# When it passes:                   python build.py plans/<launch_name>.yaml
+launch: {name: "New launch", start_date: "2027-01-04", days: 30, currency: USD}
+
+guardrails:
+  monthly_budget_cap: 20000
+  channel_split: {meta: 10000, google: 10000}
+  cpa_target: {min: 250, max: 280}
+  max_retargeting_share_meta: 0.15
+  brand_terms: ["yourbrand"]
+  verified_geos: ["US"]
+  landing_page: "https://example.com/trial"
+
+meta:
+  conversion_event: "StartTrial"
+  campaigns:
+    - name: META_US_PROSP_AdvPlus_Scale
+      role: prospecting
+      objective: OUTCOME_SALES
+      budget_level: campaign
+      monthly_budget: 10000
+      bid_strategy: LOWEST_COST_WITHOUT_CAP
+      expected_cpa: 260
+      ad_sets:
+        - name: US_Broad
+          geo: ["US"]
+          age_min: 25
+          age_max: 65
+          audience: advantage_plus
+          exclude_audiences: ["Trial_Starters_180d", "Customers_All"]
+          ads: [Ad_One]
+  ads:
+    Ad_One: {format: video, asset: ad_one.mp4, status: new, headline: "Headline", primary_text: "Primary text."}
+
+google:
+  conversion_action: "Trial Start"
+  shared_budgets: []
+  shared_negative_lists:
+    Account_Negatives: ["free", "jobs"]
+  campaigns:
+    - name: GOOG_US_Search_NonBrand
+      type: search
+      geo: ["US"]
+      monthly_budget: 10000
+      bid_strategy: TARGET_CPA
+      target_cpa: 270
+      expected_cpa: 270
+      negative_lists: [Account_Negatives]
+      negative_brand: true
+      ad_groups:
+        - name: Theme_One
+          keywords: {exact: ["keyword one"], phrase: ["keyword two"]}
+          ads: [RSA_One]
+  ads:
+    RSA_One:
+      headlines: ["Headline One", "Headline Two", "Headline Three"]
+      descriptions: ["Description one.", "Description two."]
+      path: ["path1", "path2"]

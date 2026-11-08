@@ -1,0 +1,212 @@
+# ---------------------------------------------------------------------------
+# Next-month paid plan (Task 1). This file is the single source of truth:
+# build.py validates it and turns it into Meta + Google bulk-upload files.
+# To reuse for the next launch: copy plans/_template.yaml, edit, run build.py.
+# ---------------------------------------------------------------------------
+launch:
+  name: "Next month rebuild"
+  start_date: "2026-12-01"
+  days: 31                       # must match the calendar month (validator checks)
+  currency: USD
+
+guardrails:
+  monthly_budget_cap: 120000
+  channel_split: {meta: 65000, google: 55000}   # validator allows +/-2%
+  cpa_target: {min: 250, max: 280}              # trial CPA, measured in PostHog
+  max_retargeting_share_meta: 0.15
+  brand_terms: ["search atlas", "searchatlas", "agentstack", "agent stack"]
+  verified_geos: ["US"]                         # geos where trial tracking is confirmed end-to-end
+  landing_page: "https://example.com/trial"     # replace with the real trial page
+
+meta:
+  conversion_event: "StartTrial"                # must fire via Pixel + CAPI with dedup event_id
+  campaigns:
+    - name: META_US_PROSP_AdvPlus_Scale
+      role: prospecting
+      objective: OUTCOME_SALES
+      budget_level: campaign                   # CBO / Advantage campaign budget
+      monthly_budget: 44000
+      bid_strategy: LOWEST_COST_WITHOUT_CAP
+      expected_cpa: 255
+      ad_sets:
+        - name: US_Broad_AdvPlusAudience
+          geo: ["US"]
+          age_min: 25
+          age_max: 65
+          audience: advantage_plus
+          exclude_audiences: ["Trial_Starters_180d", "Customers_All"]
+          ads: [UGC_Founder_v2, UGC_Founder_v3_HookA, UGC_Founder_v3_HookB,
+                Demo_Screen_Walkthrough, UGC_Agency_Owner, Static_AgentStack_Benefits]
+
+    - name: META_US_PROSP_CreativeTest
+      role: testing
+      objective: OUTCOME_SALES
+      budget_level: ad_set                     # ABO so each concept gets a fair, fixed spend
+      monthly_budget: 15000
+      bid_strategy: LOWEST_COST_WITHOUT_CAP
+      expected_cpa: 290
+      ad_sets:
+        - name: TEST_Carousel_Case_Study
+          geo: ["US"]
+          age_min: 25
+          age_max: 65
+          audience: broad
+          exclude_audiences: ["Trial_Starters_180d", "Customers_All"]
+          budget_share: 0.34
+          ads: [Carousel_Case_Study]
+        - name: TEST_Agency_ROI_Static
+          geo: ["US"]
+          age_min: 25
+          age_max: 65
+          audience: broad
+          exclude_audiences: ["Trial_Starters_180d", "Customers_All"]
+          budget_share: 0.33
+          ads: [Static_Agency_ROI]
+        - name: TEST_Demo_15s_Cutdown
+          geo: ["US"]
+          age_min: 25
+          age_max: 65
+          audience: broad
+          exclude_audiences: ["Trial_Starters_180d", "Customers_All"]
+          budget_share: 0.33
+          ads: [Demo_15s_Cutdown]
+
+    - name: META_US_RT_14d
+      role: retargeting
+      objective: OUTCOME_SALES
+      budget_level: campaign
+      monthly_budget: 6000
+      bid_strategy: LOWEST_COST_WITHOUT_CAP
+      expected_cpa: 300
+      ad_sets:
+        - name: RT_Site14d_Engagers14d
+          geo: ["US"]
+          age_min: 25
+          age_max: 65
+          audience: custom
+          include_audiences: ["Website_Visitors_14d", "Video_Viewers_50pct_14d"]
+          exclude_audiences: ["Trial_Starters_180d", "Customers_All"]
+          ads: [RT_Carousel_Case_Study, RT_Demo_Objections, RT_Testimonial_v2]
+
+  ads:
+    # format: video | image | carousel. asset = file name or Meta asset ID once uploaded.
+    UGC_Founder_v2:            {format: video,    asset: ugc_founder_v2.mp4,   status: existing, headline: "Your SEO, run by agents",          primary_text: "I built this because my team was drowning in SEO busywork. Start a free trial and see what the agents do in week one."}
+    UGC_Founder_v3_HookA:      {format: video,    asset: ugc_founder_v3a.mp4,  status: new,      headline: "Your SEO, run by agents",          primary_text: "We cut 20 hours of SEO grunt work a week. Here's how. Free trial, no card."}
+    UGC_Founder_v3_HookB:      {format: video,    asset: ugc_founder_v3b.mp4,  status: new,      headline: "Stop doing SEO by hand",           primary_text: "Founders: your SEO backlog doesn't need another hire. Let agents ship it. Start free."}
+    Demo_Screen_Walkthrough:   {format: video,    asset: demo_walkthrough.mp4, status: existing, headline: "Watch the agents work",            primary_text: "60 seconds: keyword research, briefs and fixes, done by agents. Try it free."}
+    UGC_Agency_Owner:          {format: video,    asset: ugc_agency_owner.mp4, status: existing, headline: "Built for agencies",               primary_text: "How one agency runs SEO for 40 clients with a team of 3. Start your free trial."}
+    Static_AgentStack_Benefits: {format: image,   asset: static_agentstack.png, status: existing, headline: "AgentStack: SEO on autopilot",    primary_text: "Research, content, technical fixes. One stack of agents. Free trial."}
+    Carousel_Case_Study:       {format: carousel, asset: carousel_case_study, status: existing, headline: "Case study: 3x organic traffic",   primary_text: "Real numbers from a real customer. Swipe through, then try it free."}
+    Static_Agency_ROI:         {format: image,    asset: static_agency_roi.png, status: new,     headline: "More clients, same team",          primary_text: "Agencies use agents to take on more SEO clients without hiring. Start free."}
+    Demo_15s_Cutdown:          {format: video,    asset: demo_15s.mp4,         status: new,      headline: "Watch the agents work",            primary_text: "15 seconds. One SEO task. Zero manual work. Try it free."}
+    RT_Carousel_Case_Study:    {format: carousel, asset: carousel_case_study, status: existing, headline: "See the results first",            primary_text: "Still deciding? Here's what customers got in 90 days."}
+    RT_Demo_Objections:        {format: video,    asset: demo_objections.mp4,  status: new,      headline: "Will it work for my site?",        primary_text: "The 3 questions everyone asks before starting a trial, answered in 45 seconds."}
+    RT_Testimonial_v2:         {format: video,    asset: testimonial_v2.mp4,   status: new,      headline: "Don't take our word for it",       primary_text: "New customer stories. Start your free trial today."}
+
+google:
+  conversion_action: "Trial Start"              # only primary conversion; everything else secondary
+  shared_budgets: []                           # deliberately empty: no shared budgets
+  shared_negative_lists:
+    Account_Negatives: ["free", "jobs", "job", "salary", "course", "certification", "login", "tutorial", "what is", "definition"]
+  campaigns:
+    - name: GOOG_US_Search_Brand
+      type: search
+      geo: ["US"]
+      monthly_budget: 9000
+      bid_strategy: TARGET_IMPRESSION_SHARE
+      target_impression_share: 0.95
+      max_cpc: 4.00
+      expected_cpa: 155
+      negative_lists: [Account_Negatives]
+      ad_groups:
+        - name: Brand_Core
+          keywords: {exact: ["search atlas", "searchatlas"], phrase: ["search atlas seo", "search atlas pricing"]}
+          ads: [Brand_RSA_1]
+        - name: Brand_Product
+          keywords: {exact: ["agentstack", "agent stack seo"], phrase: ["agentstack seo"]}
+          ads: [Brand_RSA_1]
+
+    - name: GOOG_US_Search_NonBrand
+      type: search
+      geo: ["US"]
+      monthly_budget: 30000
+      bid_strategy: TARGET_CPA
+      target_cpa: 280
+      expected_cpa: 285
+      negative_lists: [Account_Negatives]
+      negative_brand: true
+      ad_groups:
+        - name: AI_SEO_Agents
+          keywords: {exact: ["ai seo agent", "agentic seo", "ai seo software"], phrase: ["ai seo tool", "ai agent for seo", "agentic seo platform"]}
+          ads: [NB_RSA_AI]
+        - name: SEO_Automation
+          keywords: {exact: ["seo automation software", "automated seo"], phrase: ["seo automation tool", "automate seo"]}
+          ads: [NB_RSA_AI]
+        - name: Agency_SEO_Platform
+          keywords: {exact: ["seo software for agencies", "white label seo platform"], phrase: ["agency seo tool", "seo platform for agencies"]}
+          ads: [NB_RSA_Agency]
+        - name: Competitor_Alternatives
+          keywords: {exact: ["semrush alternative", "ahrefs alternative"], phrase: ["semrush alternatives", "alternative to ahrefs"]}
+          ads: [NB_RSA_Alt]
+
+    - name: GOOG_US_PMax
+      type: pmax
+      geo: ["US"]
+      monthly_budget: 16000
+      bid_strategy: TARGET_CPA
+      target_cpa: 290
+      expected_cpa: 320
+      brand_exclusion: true
+      final_url_expansion: false
+      asset_groups:
+        - name: AG_Agencies
+          audience_signal: ["Customers_All", "Website_Visitors_30d", "custom: searched seo software for agencies"]
+          ads: [PMax_Agency]
+        - name: AG_InHouse_Marketers
+          audience_signal: ["Customers_All", "Website_Visitors_30d", "custom: searched ai seo tool"]
+          ads: [PMax_InHouse]
+
+    - name: GOOG_UK_Search_NonBrand
+      type: search
+      geo: ["UK"]
+      status: PAUSED                            # 0 trials on $15K. Relaunch only once UK tracking is verified.
+      monthly_budget: 0
+      bid_strategy: TARGET_CPA
+      target_cpa: 280
+      expected_cpa: 0
+      negative_lists: [Account_Negatives]
+      negative_brand: true
+      ad_groups:
+        - name: AI_SEO_Agents_UK
+          keywords: {exact: ["ai seo agent", "agentic seo"], phrase: ["ai seo tool"]}
+          ads: [NB_RSA_AI]
+
+  ads:
+    Brand_RSA_1:
+      headlines: ["Search Atlas Official Site", "Agentic SEO Platform", "Start Your Free Trial", "SEO Run by AI Agents", "AgentStack by Search Atlas"]
+      descriptions: ["Research, content and technical SEO done by agents. Start a free trial today.", "Trusted by agencies and in-house teams. No credit card needed."]
+      path: ["free-trial", "seo"]
+    NB_RSA_AI:
+      headlines: ["AI SEO Agents That Do the Work", "Agentic SEO Platform", "Start a Free Trial Today", "Cut SEO Busywork by 80%", "From Keyword to Live Page"]
+      descriptions: ["Agents handle keyword research, briefs and fixes so your team ships faster.", "See results in week one. Free trial, no credit card."]
+      path: ["ai-seo", "trial"]
+    NB_RSA_Agency:
+      headlines: ["SEO Platform for Agencies", "Serve More Clients, Same Team", "White Label SEO Reports", "Start Your Free Trial", "AI Agents for Agency SEO"]
+      descriptions: ["Run SEO for every client with AI agents doing the heavy lifting.", "Built for agencies. Free trial, cancel any time."]
+      path: ["agencies", "trial"]
+    NB_RSA_Alt:
+      headlines: ["Looking for an Alternative?", "SEO Run by AI Agents", "Switch in a Day", "Start Your Free Trial", "More Than a Keyword Tool"]
+      descriptions: ["Don't just get data. Get agents that act on it. Try it free.", "Migrate your projects in minutes. Free trial, no card needed."]
+      path: ["compare", "trial"]
+    PMax_Agency:
+      headlines: ["SEO Platform for Agencies", "More Clients, Same Team", "Start Free Trial"]
+      long_headline: "Run SEO for every client with AI agents doing the heavy lifting"
+      descriptions: ["AI agents for agency SEO. Free trial.", "Research, content and fixes, automated."]
+      images: [pmax_agency_1.png, pmax_agency_2.png]
+      videos: [ugc_agency_owner.mp4]
+    PMax_InHouse:
+      headlines: ["SEO Run by AI Agents", "Cut SEO Busywork", "Start Free Trial"]
+      long_headline: "Keyword research, briefs and technical fixes done by AI agents"
+      descriptions: ["Agentic SEO for in-house teams. Free trial.", "Ship SEO work faster without hiring."]
+      images: [pmax_inhouse_1.png, pmax_inhouse_2.png]
+      videos: [ugc_founder_v2.mp4]
